@@ -63,7 +63,7 @@ Sphere.prototype.cast = function(ray)
 	{
 		var t1 = (-b + Math.sqrt(d)) / (2 * a);
 		var t2 = (-b - Math.sqrt(d)) / (2 * a);
-		var t = Math.min(t1, t2);
+		var t = Math.min(Math.max(0.0, t1), Math.max(0.0, t2));
 		if(t > 0.0 && t <= 1.0)
 		{
 			return ray.dir.mul(t);
