@@ -21,6 +21,17 @@ Vector.prototype.dot = function(vec)
 	return this.x * vec.x + this.y * vec.y +  this.z * vec.z;
 }
 
+Vector.prototype.mul = function(n)
+{
+	return new Vector(this.x * n, this.y * n, this.z * n);
+}
+
+Vector.prototype.distanceFrom = function(vec)
+{
+	return Math.sqrt(Math.pow(vec.x - this.x,2) + Math.pow(vec.y - this.y, 2) + 
+			 Math.pow(vec.z - this.z, 2));
+}
+
 // Projekcni rovina
 function Plane(pos, scale, w, h)
 {
@@ -50,7 +61,17 @@ Sphere.prototype.cast = function(ray)
 	var d = b * b - 4 * a * c;
 	if(d > 0)
 	{
-		return 0;
+		var t1 = (-b + Math.sqrt(d)) / (2 * a);
+		var t2 = (-b - Math.sqrt(d)) / (2 * a);
+		var t = Math.min(t1, t2);
+		if(t > 0.0 && t <= 1.0)
+		{
+			return ray.dir.mul(t);
+		}
+		else
+		{
+			return null;
+		}
 	}
 	else
 	{
@@ -68,20 +89,32 @@ function createRay(nearPlane, farPlane, x, y)
 // Vraci barvu pixelu
 function rayCast(x, y, objects)
 {
-	var clippingDistance = 500; // Viditelnost
-	var nearPlane = new Plane(new Vector(-200, -150, 0), 1);
+	var clippingDistance = 600; // Viditelnost
+	var nearPlane = new Plane(new Vector(-200, -150, -1), 1);
 	var farPlane = new Plane(new Vector(-200, -150, clippingDistance), 1);
 
 	var ray = createRay(nearPlane, farPlane, x, y);
+	var nearestHit = null;
 	for(var i = 0; i < objects.length; i++)
 	{
 		var hitPos = objects[i].cast(ray);
 		if(hitPos != null)
 		{
-			return "rgb(255, 255, 255)";
+			if(nearestHit == null || nearestHit.distanceFrom(ray.start) > hitPos.distance(ray.start))
+			{
+				nearestHit = hitPos;
+			}
 		}
 	}
-	return "rgb(0, 0, 0)";	
+	if(nearestHit == null)
+	{
+		return "rgb(0, 0, 0)";	
+	}	
+	else
+	{
+		var color = new Vector(255, 255, 255); // Defaultni barva
+		return "rgb(" + color.x + ", " + color.y + ", " + color.z + ")";	
+	}
 }
 
 // Vykresli pixel na dane pozici
@@ -101,7 +134,7 @@ window.onload = function()
 	{
 		for(var x = 0; x < c.width; x++)
 		{
-			drawPixel(ctx, x, y, rayCast(x, y, [new Sphere(new Vector(0, 0, 20), 20)]));
+			drawPixel(ctx, x, y, rayCast(x, y, [new Sphere(new Vector(0, 0, -20), 10)]));
 		}
 	}
 }
