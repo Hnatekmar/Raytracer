@@ -22,10 +22,12 @@ Vector.prototype.dot = function(vec)
 }
 
 // Projekcni rovina
-function Plane(pos, scale)
+function Plane(pos, scale, w, h)
 {
+	this.w = w;
+	this.h = h
 	this.pos = pos;
-	this.scale = scale;
+	this.scale = scale / 2;
 }
 
 Plane.prototype.getPixel = function(x, y)
@@ -67,8 +69,8 @@ function createRay(nearPlane, farPlane, x, y)
 function rayCast(x, y, objects)
 {
 	var clippingDistance = 500; // Viditelnost
-	var nearPlane = new Plane(new Vector(-400, -300, 0), 1);
-	var farPlane = new Plane(new Vector(-400, -300, clippingDistance), clippingDistance);
+	var nearPlane = new Plane(new Vector(-200, -150, 0), 1);
+	var farPlane = new Plane(new Vector(-200, -150, clippingDistance), 1);
 
 	var ray = createRay(nearPlane, farPlane, x, y);
 	for(var i = 0; i < objects.length; i++)
@@ -99,7 +101,7 @@ window.onload = function()
 	{
 		for(var x = 0; x < c.width; x++)
 		{
-			drawPixel(ctx, x, y, rayCast(x, y, [new Sphere(new Vector(0, 0, 20), 50)]));
+			drawPixel(ctx, x, y, rayCast(x, y, [new Sphere(new Vector(0, 0, 20), 20)]));
 		}
 	}
 }
