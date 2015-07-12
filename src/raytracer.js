@@ -11,7 +11,7 @@ function notNull()
 
 function Vector(x, y, z)
 {
-  notNull(x, y, z);
+        notNull(x, y, z);
 	this.x = x;
 	this.y = y;
 	this.z = z;
@@ -19,32 +19,32 @@ function Vector(x, y, z)
 
 Vector.prototype.sub = function(vec)
 {
-  notNull(vec);
+        notNull(vec);
 	return new Vector(this.x - vec.x, this.y - vec.y, this.z - vec.z);
 }
 
 
 Vector.prototype.add = function(vec)
 {
-  notNull(vec);
+        notNull(vec);
 	return new Vector(this.x + vec.x, this.y + vec.y, this.z + vec.z);
 }
 
 Vector.prototype.dot = function(vec)
 {
-  notNull(vec);
+        notNull(vec);
 	return this.x * vec.x + this.y * vec.y +  this.z * vec.z;
 }
 
 Vector.prototype.mul = function(n)
 {
-  notNull(vec);
+        notNull(n);
 	return new Vector(this.x * n, this.y * n, this.z * n);
 }
 
 Vector.prototype.distanceFrom = function(vec)
 {
-  notNull(vec);
+        notNull(vec);
 	return Math.sqrt(Math.pow(vec.x - this.x,2) + Math.pow(vec.y - this.y, 2) + 
 			 Math.pow(vec.z - this.z, 2));
 }
@@ -63,31 +63,29 @@ Vector.prototype.fuzzyEquals = function(vec)
 }
 
 // Projekcni rovina
-function Plane(pos, scale, w, h)
+function Plane(pos, scale)
 {
-  notNull(pos, scale, w, h);
-	this.w = w;
-	this.h = h
+        notNull(pos, scale);
 	this.pos = pos;
 	this.scale = scale / 2;
 }
 
 Plane.prototype.getPixel = function(x, y)
 {
-  notNull(x, y);
+        notNull(x, y);
 	return this.pos.add(new Vector(x * this.scale, y * this.scale, 0));
 }
 
 function Sphere(pos, r)
 {
-  notNull(pos, r);
+        notNull(pos, r);
 	this.pos = pos;
 	this.r = r;
 }
 
 Sphere.prototype.cast = function(ray)
 {
-  notNull(ray);
+        notNull(ray);
 	var a = ray.dir.dot(ray.dir);
 	var tmp = ray.start.sub(this.pos);
 	var b = 2 * ray.dir.dot(tmp);	
@@ -115,7 +113,7 @@ Sphere.prototype.cast = function(ray)
 
 function createRay(nearPlane, farPlane, x, y)
 {
-  notNull(nearPlane, farPlane, x, y);
+        notNull(nearPlane, farPlane, x, y);
 	return { "start" : nearPlane.getPixel(x, y), 
 		 "dir" : nearPlane.getPixel(x, y).sub(farPlane.getPixel(x, y))
 		};
@@ -145,14 +143,14 @@ function findNearest(ray, objects)
 // Vraci barvu pixelu
 function rayCast(x, y, objects)
 {
-  notNull(x, y, objects);
+        notNull(x, y, objects);
 	var clippingDistance = 1000; // Viditelnost
 	var nearPlane = new Plane(new Vector(-200, -150, -1), 1);
 	var farPlane = new Plane(new Vector(-200, -150, clippingDistance), 1);
 
 	var ray = createRay(nearPlane, farPlane, x, y);
 	
-  nearestHit = findNearest(ray, objects);
+        nearestHit = findNearest(ray, objects);
   
 	if(nearestHit === null)
 	{
@@ -168,7 +166,7 @@ function rayCast(x, y, objects)
 // Vykresli pixel na dane pozici
 function drawPixel(ctx, x, y, col)
 {
-  notNull(ctx, x, y, col);
+        notNull(ctx, x, y, col);
 	ctx.fillStyle = col;
 	ctx.fillRect(x, y, 1, 1);
 }
@@ -183,7 +181,7 @@ window.onload = function()
 	{
 		for(var x = 0; x < c.width; x++)
 		{
-			drawPixel(ctx, x, y, rayCast(x, y, [new Sphere(new Vector(0, 0, -55), 50)]));
+			drawPixel(ctx, x, y, rayCast(x, y, [new Sphere(new Vector(0, 0, -550), 50)]));
 		}
 	}
 }
