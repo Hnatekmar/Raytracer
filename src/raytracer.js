@@ -41,7 +41,13 @@ Vector.prototype.add = function(vec)
 Vector.prototype.dot = function(vec)
 {
         notNull(vec);
-        return this.x * vec.x + this.y * vec.y +  this.z * vec.z;
+        return (this.x * vec.x + this.y * vec.y +  this.z * vec.z); 
+}
+
+Vector.prototype.angle = function(vec)
+{
+	return this.dot(vec) /
+               (Math.sqrt(this.dot(this)) *  Math.sqrt(vec.dot(vec))); 
 }
 
 Vector.prototype.mul = function(n)
@@ -55,6 +61,21 @@ Vector.prototype.distanceFrom = function(vec)
         notNull(vec);
         return Math.sqrt(Math.pow(vec.x - this.x,2) + Math.pow(vec.y - this.y, 2) + 
                         Math.pow(vec.z - this.z, 2));
+}
+
+Vector.prototype.magnitude = function()
+{
+	return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+}
+
+Vector.prototype.normalize = function()
+{
+	var len = this.magnitude();
+	if(len != 0)
+	{
+		return new Vector(this.x / len, this.y / len, this.z / len);
+	}
+	return new Vector(0, 0, 0);
 }
 
 function fuzzyEquals(a, b)
@@ -89,7 +110,10 @@ function Sphere(pos, r)
         notNull(pos, r);
         this.pos = pos;
         this.r = r;
-        this.material = new Material(0.5, 255, 255, 0);
+        this.material = new Material(0.9,
+			Math.round(Math.random() * 255),
+			Math.round(Math.random() * 255),
+			Math.round(Math.random() * 255))
 }
 
 Sphere.prototype.cast = function(ray)
@@ -120,6 +144,11 @@ Sphere.prototype.cast = function(ray)
         }
 }
 
+Sphere.prototype.getNormal = function(pos)
+{
+	return pos.sub(this.pos).normalize();
+}
+
 function createRay(nearPlane, farPlane, x, y)
 {
         notNull(nearPlane, farPlane, x, y);
@@ -138,7 +167,7 @@ function findNearest(ray, objects)
                 var hitPos = objects[i].cast(ray);
                 if(hitPos != null)
                 {
-                        if(nearestHit === null || nearestHit.hitPos.distanceFrom(ray.start) > hitPos.distance(ray.start))
+                        if(nearestHit === null || nearestHit.hitPos.distanceFrom(ray.start) > hitPos.distanceFrom(ray.start))
                         {
                                 nearestHit = {
                                         "hitPos" : hitPos,
@@ -169,8 +198,26 @@ function rayCast(x, y, objects, lights)
         else
         {
                 var color = nearestHit.hitObject.material;
-                
-                return "rgb(" + color.x + ", " + color.y + ", " + color.z + ")";	
+		var intensity = 0.0;
+		var kd = 0.5;
+		var ka = 0.1;
+		var normal = nearestHit.hitObject.getNormal(nearestHit.hitPos);
+		for(var i = 0; i < lights.length; i++)
+		{
+			ray = {
+				"start" : nearestHit.hitPos,
+				"dir" : lights[i].sub(nearestHit.hitPos)
+			};
+			var hit = findNearest(ray, objects);
+			if(hit == null)
+			{
+				var lvec = lights[i].sub(nearestHit.hitPos);
+				intensity += (normal.angle(lvec));
+			}
+		}
+                return "rgb(" + Math.round(Math.min(color.x * intensity * kd + color.x * ka, 255)) + ", " 
+			+ Math.round(Math.min(color.y * intensity * kd + color.y * ka, 255)) + ", "
+			+ Math.round(Math.min(color.z * intensity * kd + color.z * ka, 255)) + ")";	
         }
 }
 
@@ -188,8 +235,11 @@ window.onload = function()
         console.log("Raytracer startuje");
         var c = document.getElementById("canvas");
         var ctx = c.getContext("2d");
-        var lights = [new Vector(0, 0, 0)];
-        var objects = [new Sphere(new Vector(0, 0, -52), 50)];
+        var lights = [new Vector(0, 0, 0),
+	    	      new Vector(5, 0, 50)];
+        var objects = [new Sphere(new Vector(-10, 0, -30), 20),
+	    	       new Sphere(new Vector(10, 0, -30), 20),
+	    	       new Sphere(new Vector(0, -10, -30), 20)];
         for(var y = 0; y < c.height; y++)
         {
                 for(var x = 0; x < c.width; x++)
